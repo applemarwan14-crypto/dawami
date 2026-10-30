@@ -725,7 +725,7 @@ details.fold[open] summary{margin-bottom:14px}
 <script>
 (() => {
 'use strict';
-const VERSION='4.0.0';
+const VERSION='4.0.1';
 // قاعدة البيانات (Supabase). المفتاح العام آمن للنشر؛ الجداول مغلقة ولا يُوصل لها إلا عبر دوال تتحقق من رمز الدخول.
 const SB_URL='https://rqdkbanngxzqcohjwkqd.supabase.co';
 const SB_KEY='sb_publishable_riz1vtR18k2qJ5w-Xv87mQ_P16NqyOB';
@@ -1353,7 +1353,14 @@ applyTheme();renderHeader();
 takeHashKey();
 if(accessKey){showGate('gLoading');refresh().then(()=>{if(loaded)handleURL()})}
 else showGate('gStart');
-if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost'))navigator.serviceWorker.register('sw.js').catch(()=>{});
+// تحديث التطبيق تلقائيًا: نفحص وجود نسخة جديدة عند كل فتح، ونعيد التحميل مرة واحدة إذا وصلت
+if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost')){
+  const hadController=!!navigator.serviceWorker.controller;let reloaded=false;
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{if(hadController&&!reloaded&&!pending){reloaded=true;location.reload()}});
+  navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{
+    document.addEventListener('visibilitychange',()=>{if(!document.hidden)reg.update().catch(()=>{})});
+  }).catch(()=>{});
+}
 })();
 </script>
 </body>
