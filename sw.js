@@ -1,5 +1,5 @@
 // يحدَّث رقم الإصدار مع كل تعديل على ملفات التطبيق
-const CACHE = 'dawami-v3.0.0';
+const CACHE = 'dawami-v4.0.0';
 const ASSETS = [
   './',
   './index.html',
