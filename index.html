@@ -288,6 +288,9 @@ details.collapse[open] summary{margin-bottom:14px}
   font-size:14px;font-weight:600;box-shadow:0 10px 30px rgba(0,0,0,.2);transition:transform .25s ease;text-align:center;
 }
 .toast.show{transform:translate(-50%,0)}
+.banner{background:var(--warn-bg);color:var(--warn);border-radius:16px;padding:12px 14px;margin-bottom:14px;font-size:13.5px;line-height:1.8}
+.banner b{font-weight:700}
+.banner.danger{background:var(--bad-bg);color:var(--bad)}
 .hidden{display:none!important}
 
 .home-grid,.two{display:grid;grid-template-columns:minmax(0,1fr);gap:14px;align-items:start}
@@ -348,6 +351,8 @@ details.collapse[open] summary{margin-bottom:14px}
     </div>
     <button class="avatar" id="themeToggle" aria-label="تبديل المظهر"><svg><use href="#i-moon"/></svg></button>
   </header>
+
+  <div class="banner hidden" id="storageBanner"></div>
 
   <!-- ===================== الرئيسية ===================== -->
   <section id="home" class="view active">
@@ -541,6 +546,7 @@ details.collapse[open] summary{margin-bottom:14px}
           <div class="sec-title">البيانات</div>
           <div class="card">
             <p class="muted small" style="margin-top:0">البيانات محفوظة على هذا الجهاز فقط. صدّر نسخة احتياطية بشكل دوري.</p>
+            <p class="small" id="storageStatus" style="margin-top:0"></p>
             <div class="btn-row" style="margin-top:0">
               <button class="btn" id="exportJson">تصدير نسخة</button>
               <label class="btn ghost">استيراد نسخة<input type="file" id="importJson" accept="application/json,.json" class="hidden"></label>
@@ -569,7 +575,7 @@ details.collapse[open] summary{margin-bottom:14px}
 <script>
 (() => {
 'use strict';
-const VERSION='2.0.0';
+const VERSION='2.0.1';
 const KEY='attendanceAllowanceAssistant_v1';
 const AR_DAYS=['الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
 const AR_MONTHS=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
@@ -962,7 +968,24 @@ let lastDay=isoDate(todayLocal());
 setInterval(()=>{if(document.hidden)return;const d=isoDate(todayLocal());if(d!==lastDay){lastDay=d;$('hDate').value='';render()}else{renderHeader();renderStatus()}},15000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden){state=loadState();handleURL();lastDay=isoDate(todayLocal());render()}});
 
-applyTheme();handleURL();render();
+// ===================== فحص التخزين =====================
+const isIOS=/iPhone|iPad|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+const isStandalone=navigator.standalone===true||matchMedia('(display-mode: standalone)').matches;
+function storageWorks(){try{const k='__dawami_test';localStorage.setItem(k,'1');const ok=localStorage.getItem(k)==='1';localStorage.removeItem(k);return ok}catch(e){return false}}
+async function checkStorage(){
+  const works=storageWorks(),banner=$('storageBanner');let persisted=false;
+  try{if(navigator.storage?.persist)persisted=await navigator.storage.persisted()||await navigator.storage.persist()}catch(e){}
+  if(!works){
+    banner.className='banner danger';
+    banner.innerHTML='<b>الحفظ متوقف في هذا المتصفح.</b> غالبًا أنت في <b>التصفح الخاص</b> أو داخل متصفح تطبيق آخر. افتح الرابط في Safari العادي ثم ثبّته على الشاشة الرئيسية.';
+  }else if(isIOS&&!isStandalone){
+    banner.className='banner';
+    banner.innerHTML='<b>أنت فاتح «دوامي» من المتصفح.</b> البيانات هنا منفصلة عن التطبيق المثبّت وممكن تنحذف. افتح الرابط في <b>Safari</b> ← زر المشاركة ← <b>إضافة إلى الشاشة الرئيسية</b>، وبعدها استخدمه دائمًا من الأيقونة.';
+  }else banner.className='banner hidden';
+  $('storageStatus').innerHTML=!works?'<span style="color:var(--bad)">● الحفظ لا يعمل في هذا المتصفح</span>':isStandalone?`<span style="color:var(--ok)">● يعمل كتطبيق مثبّت${persisted?' · تخزين دائم':''}</span>`:`<span style="color:var(--warn)">● يعمل من المتصفح${persisted?' · تخزين دائم':''} — يفضّل تثبيته</span>`;
+}
+
+applyTheme();handleURL();render();checkStorage();
 if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost'))navigator.serviceWorker.register('sw.js').catch(()=>{});
 })();
 </script>
