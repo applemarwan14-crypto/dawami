@@ -247,7 +247,14 @@ button{cursor:pointer}
   width:100%;min-height:48px;padding:10px 14px;background:var(--surface-2);border:1px solid transparent;border-radius:14px;outline:none;
   transition:border-color .15s,box-shadow .15s,background .15s;-webkit-appearance:none;appearance:none;
 }
-.field input[type="time"],.field input[type="date"]{direction:ltr;text-align:right}
+.field input[type="time"]{direction:ltr;text-align:right;unicode-bidi:isolate}
+.field input[type="time"]::-webkit-date-and-time-value{direction:ltr;text-align:right;unicode-bidi:isolate}
+.date-field{position:relative}
+.date-face{display:flex;align-items:center;gap:8px;min-height:48px;padding:10px 14px;background:var(--surface-2);border:1px solid transparent;border-radius:14px;pointer-events:none;white-space:nowrap;overflow:hidden;transition:border-color .15s,box-shadow .15s}
+.date-face span{overflow:hidden;text-overflow:ellipsis}
+.date-face .ic{color:var(--text-3);width:18px;height:18px}
+.date-field input{position:absolute;inset:0;width:100%;height:100%;min-height:0;opacity:0;cursor:pointer;padding:0}
+.date-field:focus-within .date-face{background:var(--surface);border-color:var(--brand-2);box-shadow:0 0 0 4px color-mix(in srgb,var(--brand-2) 16%,transparent)}
 .field input:focus,.input:focus{background:var(--surface);border-color:var(--brand-2);box-shadow:0 0 0 4px color-mix(in srgb,var(--brand-2) 16%,transparent)}
 .grid-2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .grid-3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
@@ -485,10 +492,10 @@ details.fold[open] summary{margin-bottom:14px}
 
         <details class="card fold" id="calcCard">
           <summary><h3 class="card-title"><svg class="ic"><use href="#ph-calculator"/></svg>حاسبة الخروج</h3><svg class="ic chev"><use href="#ph-caret-down"/></svg></summary>
-          <div class="grid-3">
-            <div class="field"><label for="hDate">التاريخ</label><input type="date" id="hDate"></div>
-            <div class="field"><label for="hIn">الحضور</label><input type="time" id="hIn"></div>
-            <div class="field"><label for="hOut">خروج مقترح</label><input type="time" id="hOut"></div>
+          <div class="grid-2">
+            <div class="field" style="grid-column:1/-1"><label for="hDate">التاريخ</label><div class="date-field"><span class="date-face" aria-hidden="true"><svg class="ic"><use href="#ph-calendar-blank"/></svg><span id="hDateFace"></span></span><input type="date" id="hDate"></div></div>
+            <div class="field"><label for="hIn">الحضور</label><input type="time" dir="ltr" id="hIn"></div>
+            <div class="field"><label for="hOut">خروج مقترح</label><input type="time" dir="ltr" id="hOut"></div>
           </div>
           <div class="calc-out">
             <div><span>يكتمل الدوام</span><b class="num" id="completeAt">—</b></div>
@@ -597,7 +604,7 @@ details.fold[open] summary{margin-bottom:14px}
           <div class="group-title">الدوام · يُحفظ تلقائيًا</div>
           <div class="group">
             <div class="set"><div class="set-head"><span class="chip-ic t-ok"><svg class="ic"><use href="#ph-timer"/></svg></span><span class="set-label">ساعات العمل اليومية</span></div><div class="set-ctl field"><input type="number" inputmode="decimal" id="sDaily" min="0.5" step="0.25"></div></div>
-            <div class="set"><div class="set-head"><span class="chip-ic t-brand"><svg class="ic"><use href="#ph-sign-in"/></svg></span><span class="set-label">بداية احتساب الدوام</span></div><div class="set-ctl field"><input type="time" id="sStart"></div></div>
+            <div class="set"><div class="set-head"><span class="chip-ic t-brand"><svg class="ic"><use href="#ph-sign-in"/></svg></span><span class="set-label">بداية احتساب الدوام</span></div><div class="set-ctl field"><input type="time" dir="ltr" id="sStart"></div></div>
             <div class="set"><div class="set-head"><span class="chip-ic t-warn"><svg class="ic"><use href="#ph-hourglass-medium"/></svg></span><span class="set-label">رصيد السماح الشهري<small>بالساعات</small></span></div><div class="set-ctl field"><input type="number" inputmode="decimal" id="sMonthly" min="0" step="0.25"></div></div>
             <div class="set col"><div class="set-head"><span class="chip-ic t-off"><svg class="ic"><use href="#ph-coffee"/></svg></span><span class="set-label">أيام الراحة الأسبوعية</span></div><div class="chips" id="sWeekend"></div></div>
           </div>
@@ -672,10 +679,10 @@ details.fold[open] summary{margin-bottom:14px}
       <div><h3 id="shTitle"></h3><p class="muted small" id="shSub"></p></div>
       <button class="icon-btn flat" data-close-sheet aria-label="إغلاق"><svg class="ic"><use href="#ph-x"/></svg></button>
     </div>
-    <div class="field"><label for="shDate">التاريخ</label><input type="date" id="shDate"></div>
+    <div class="field"><label for="shDate">التاريخ</label><div class="date-field"><span class="date-face" aria-hidden="true"><svg class="ic"><use href="#ph-calendar-blank"/></svg><span id="shDateFace"></span></span><input type="date" id="shDate"></div></div>
     <div class="grid-2">
-      <div class="field"><label for="shIn">الحضور</label><div class="with-btn"><input type="time" id="shIn"><button class="now" data-now="shIn">الآن</button></div></div>
-      <div class="field"><label for="shOut">الانصراف</label><div class="with-btn"><input type="time" id="shOut"><button class="now" data-now="shOut">الآن</button></div></div>
+      <div class="field"><label for="shIn">الحضور</label><div class="with-btn"><input type="time" dir="ltr" id="shIn"><button class="now" data-now="shIn">الآن</button></div></div>
+      <div class="field"><label for="shOut">الانصراف</label><div class="with-btn"><input type="time" dir="ltr" id="shOut"><button class="now" data-now="shOut">الآن</button></div></div>
     </div>
     <div class="note" id="shCalc" style="margin:0 0 14px"></div>
     <div class="field"><label>نوع اليوم</label><div class="chips" id="shKind"></div></div>
@@ -727,7 +734,7 @@ details.fold[open] summary{margin-bottom:14px}
 <script>
 (() => {
 'use strict';
-const VERSION='4.0.3';
+const VERSION='4.0.4';
 // قاعدة البيانات (Supabase). المفتاح العام آمن للنشر؛ الجداول مغلقة ولا يُوصل لها إلا عبر دوال تتحقق من رمز الدخول.
 const SB_URL='https://rqdkbanngxzqcohjwkqd.supabase.co';
 const SB_KEY='sb_publishable_riz1vtR18k2qJ5w-Xv87mQ_P16NqyOB';
@@ -912,6 +919,12 @@ function formatDuration(value,{seconds=false}={}){
   return sign+(a.join(' و')||'0 دقيقة');
 }
 function shortDuration(min){min=Math.max(0,Math.round(min));const h=Math.floor(min/60),m=min%60;return h?`${h}:${pad(m)}`:`${m}د`}
+function paintDate(id,{short=false}={}){
+  const v=$(id).value,face=$(id+'Face');if(!face)return;
+  if(!ISO_RE.test(v)){face.textContent='اختر التاريخ';return}
+  const d=fromISO(v),sameYear=d.getFullYear()===new Date().getFullYear();
+  face.textContent=short?`${d.getDate()} ${AR_MONTHS[d.getMonth()]}${sameYear?'':' '+d.getFullYear()}`:`${dateLabel(d)} ${d.getFullYear()}`;
+}
 function dateLabel(d){return `${AR_DAYS[d.getDay()]} ${d.getDate()} ${AR_MONTHS[d.getMonth()]}`}
 function hijri(d,opts={day:'numeric',month:'long',year:'numeric'}){try{return new Intl.DateTimeFormat('ar-SA-u-ca-islamic-umalqura-nu-latn',opts).format(d)}catch(e){return ''}}
 function normTime(s){
@@ -1080,6 +1093,7 @@ function renderHome(){
 }
 
 function updateCalc(){
+  paintDate('hDate');
   const dateVal=$('hDate').value||isoDate(todayLocal()),d=fromISO(dateVal),y=d.getFullYear(),m=d.getMonth(),M=peekMonth(y,m),sum=summary(y,m);
   const remDates=remainingWorkDates(y,m),included=remDates.some(x=>isoDate(x)===dateVal);
   const existingUsed=sum.rows.find(r=>r.date===dateVal)?.used||0,balance=sum.remaining+existingUsed;
@@ -1142,6 +1156,7 @@ function openDay(date){
   $('sheet').classList.add('open');$('sheet').setAttribute('aria-hidden','false');
 }
 function fillSheet(){
+  paintDate('shDate');
   const date=$('shDate').value;if(!ISO_RE.test(date))return;
   const d=fromISO(date),M=monthOfDate(date),rec=M.records[date]||{},kind=M.exceptions[date]||'',info=dayInfo(d);
   $('shTitle').textContent=dateLabel(d);$('shSub').textContent=`${hijri(d)} · ${info.label}`;
@@ -1160,6 +1175,7 @@ function updateSheetCalc(){
 }
 function closeSheet(){$('sheet').classList.remove('open');$('sheet').setAttribute('aria-hidden','true');document.activeElement?.blur()}
 $('shDate').addEventListener('change',fillSheet);
+$('shDate').addEventListener('input',()=>paintDate('shDate'));
 ['shIn','shOut'].forEach(id=>$(id).addEventListener('input',updateSheetCalc));
 $('shKind').addEventListener('change',updateSheetCalc);
 $('shSave').onclick=()=>{
