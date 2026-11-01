@@ -15,7 +15,12 @@ jobs:
     steps:
       - name: Cancel stuck deployment
         run: |
-          gh api -X POST repos/${{ github.repository }}/pages/deployments/47c883156b982c7ded03e304600e7202f8d8dbc8/cancel && echo cancelled || echo "cancel failed"
+          for id in 47c883156b982c7ded03e304600e7202f8d8dbc8 59ceb45edc7fa9e6e1590dfc838c59ebb45a7691; do
+            echo "== $id before:"; gh api repos/${{ github.repository }}/pages/deployments/$id || true
+            gh api -X POST repos/${{ github.repository }}/pages/deployments/$id/cancel -i 2>&1 | head -1 || true
+            echo "== $id after:"; gh api repos/${{ github.repository }}/pages/deployments/$id || true
+          done
+          gh api repos/${{ github.repository }}/pages || true
       - name: Request new Pages build
         run: |
           sleep 15
