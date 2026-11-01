@@ -15,7 +15,7 @@ ICONS = [
     'warning-circle', 'info', 'trash', 'pencil-simple', 'plus', 'x', 'key', 'link',
     'download-simple', 'upload-simple', 'arrow-clockwise', 'lightning', 'user-circle', 'palette',
     'lightbulb', 'flag', 'sparkle', 'calendar-blank', 'calendar-x', 'calculator',
-    'sliders-horizontal', 'shield-check', 'fingerprint', 'hand-palm', 'circle-half',
+    'sliders-horizontal', 'shield-check', 'fingerprint', 'hand-palm', 'circle-half', 'laptop',
 ]
 
 assets, page = sys.argv[1], sys.argv[2]
