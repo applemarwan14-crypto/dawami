@@ -100,8 +100,12 @@ button{cursor:pointer}
   background:linear-gradient(145deg,var(--brand-2),var(--brand));color:#fff;font-weight:600;font-size:18px;
   box-shadow:0 6px 16px -4px rgba(26,77,64,.45);
 }
+.me img,.av-prev img{width:100%;height:100%;border-radius:50%;object-fit:cover;display:block}
+.me{overflow:hidden}
+.av-prev{width:46px;height:46px;flex:0 0 auto;border-radius:50%;display:grid;place-items:center;overflow:hidden;background:linear-gradient(145deg,var(--brand-2),var(--brand));color:#fff;font-weight:600;font-size:18px}
+.av-actions{display:flex;gap:6px;flex:0 0 auto}
 .hello h1{margin:0;font-size:20px;font-weight:600;line-height:1.3;letter-spacing:-.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.hello p{margin:1px 0 0;color:var(--text-2);font-size:12.5px}
+.hello p{margin:1px 0 0;color:var(--text-2);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .head-actions{display:flex;align-items:center;gap:8px;flex:0 0 auto}
 .icon-btn{
   width:42px;height:42px;border-radius:14px;border:1px solid var(--border);background:var(--surface);
@@ -586,6 +590,7 @@ details.fold[open] summary{margin-bottom:14px}
         <div>
           <div class="group-title">الملف الشخصي</div>
           <div class="group">
+            <div class="set"><div class="set-head"><span class="av-prev" id="avPrev"></span><span class="set-label">الصورة الشخصية<small>تظهر أعلى الصفحة</small></span></div><div class="av-actions"><label class="btn sm">تغيير<input type="file" id="avFile" accept="image/*" class="hidden"></label><button class="btn sm danger" id="avDel" aria-label="حذف الصورة"><svg class="ic"><use href="#ph-trash"/></svg></button></div></div>
             <div class="set"><div class="set-head"><span class="chip-ic t-brand"><svg class="ic"><use href="#ph-user-circle"/></svg></span><span class="set-label">الاسم<small>يظهر في الترحيب</small></span></div><div class="set-ctl field"><input type="text" id="sName" maxlength="30" placeholder="اسمك" autocomplete="given-name"></div></div>
             <div class="set col"><div class="set-head"><span class="chip-ic t-extra"><svg class="ic"><use href="#ph-palette"/></svg></span><span class="set-label">المظهر</span></div>
               <div class="seg">
@@ -734,7 +739,7 @@ details.fold[open] summary{margin-bottom:14px}
 <script>
 (() => {
 'use strict';
-const VERSION='4.0.4';
+const VERSION='4.1.0';
 // قاعدة البيانات (Supabase). المفتاح العام آمن للنشر؛ الجداول مغلقة ولا يُوصل لها إلا عبر دوال تتحقق من رمز الدخول.
 const SB_URL='https://rqdkbanngxzqcohjwkqd.supabase.co';
 const SB_KEY='sb_publishable_riz1vtR18k2qJ5w-Xv87mQ_P16NqyOB';
@@ -774,7 +779,7 @@ function normalizeSettings(src){
 }
 // يحوّل أي صيغة (السحابة المسطّحة أو النسخة القديمة المقسّمة بالأشهر) إلى صيغة مسطّحة
 function toFlat(src){
-  const out={settings:normalizeSettings(src?.settings),records:{},exceptions:{}};
+  const out={settings:normalizeSettings(src?.settings),records:{},exceptions:{},avatar:typeof src?.avatar==='string'&&src.avatar.startsWith('data:image/')?src.avatar:''};
   const addRec=(d,r)=>{if(ISO_RE.test(d)&&r&&typeof r==='object'){const i=normTime(r.in)||'',o=normTime(r.out)||'';if(i||o)out.records[d]={in:i,out:o}}};
   const addEx=(d,t)=>{if(ISO_RE.test(d)&&t)out.exceptions[d]=String(t).slice(0,40)};
   if(src?.records)for(const [d,r] of Object.entries(src.records))addRec(d,r);
@@ -786,14 +791,14 @@ function toFlat(src){
   return out;
 }
 function fromFlat(flat){
-  const st={settings:normalizeSettings(flat.settings),months:{}};
+  const st={settings:normalizeSettings(flat.settings),months:{},avatar:flat.avatar||''};
   const month=d=>{const k=d.slice(0,7);return st.months[k]||(st.months[k]={records:{},exceptions:{}})};
   for(const [d,r] of Object.entries(flat.records||{}))month(d).records[d]={in:r.in||'',out:r.out||''};
   for(const [d,t] of Object.entries(flat.exceptions||{}))month(d).exceptions[d]=t;
   return st;
 }
 
-let state={settings:defaultSettings(),months:{}};
+let state={settings:defaultSettings(),months:{},avatar:''};
 let accessKey=readKey();
 let loaded=false;
 let snapshot=null; // آخر نسخة مؤكدة من السحابة، نرجع لها إذا فشل حفظ تعديل
@@ -822,6 +827,7 @@ async function rpc(fn,args){
   return body;
 }
 function errText(e){
+  if(String(e?.code||'').includes('Could not find the function'))return 'هذي الميزة تحتاج تحديث قاعدة البيانات أولًا';
   return {offline:'ما فيه اتصال بالإنترنت — ما انحفظ التعديل',invalid_key:'رمز الدخول غير صحيح',no_check_in:'سجّل الحضور أولًا',invalid_time:'صيغة الوقت غير صحيحة'}[e?.code]||'تعذّر الحفظ، حاول مرة ثانية';
 }
 function setSync(kind){
@@ -867,7 +873,7 @@ function showGate(panel){
 function hideGate(){$('gate').classList.add('hidden')}
 function legacyData(){try{const s=JSON.parse(localStorage.getItem(LEGACY_KEY));const f=toFlat(s||{});return Object.keys(f.records).length||Object.keys(f.exceptions).length?{raw:s,flat:f}:null}catch(e){return null}}
 function logout(msg){
-  storeKey('');loaded=false;snapshot=null;state={settings:defaultSettings(),months:{}};
+  storeKey('');loaded=false;snapshot=null;state={settings:defaultSettings(),months:{},avatar:''};
   showGate('gStart');if(msg)$('gErr').textContent=msg;
 }
 let draftKey='';
@@ -926,7 +932,7 @@ function paintDate(id,{short=false}={}){
   face.textContent=short?`${d.getDate()} ${AR_MONTHS[d.getMonth()]}${sameYear?'':' '+d.getFullYear()}`:`${dateLabel(d)} ${d.getFullYear()}`;
 }
 function dateLabel(d){return `${AR_DAYS[d.getDay()]} ${d.getDate()} ${AR_MONTHS[d.getMonth()]}`}
-function hijri(d,opts={day:'numeric',month:'long',year:'numeric'}){try{return new Intl.DateTimeFormat('ar-SA-u-ca-islamic-umalqura-nu-latn',opts).format(d)}catch(e){return ''}}
+function hijri(d,opts={day:'numeric',month:'long',year:'numeric'}){try{return new Intl.DateTimeFormat('ar-SA-u-ca-islamic-umalqura-nu-latn',opts).format(d).replace(/،/g,'')}catch(e){return ''}}
 function normTime(s){
   if(s==null||s==='')return null;s=toLatin(s).trim().toLowerCase();
   const mt=s.match(/(\d{1,2})[:.٫](\d{2})(?:\s*(ص|م|am|pm|a\.m\.|p\.m\.))?/);if(!mt)return null;
@@ -1001,9 +1007,11 @@ function render(){renderHeader();renderHome();renderCalendar();renderPlan();rend
 function renderHeader(){
   const h=new Date().getHours(),name=state.settings.name,g=h>=4&&h<12?'صباح الخير':'مساء الخير';
   $('greeting').textContent=name?`${g}، ${name.split(' ')[0]}`:g;
-  $('meAvatar').textContent=(name||'دوامي').trim()[0];
-  const t=todayLocal(),hj=hijri(t);
+  const initial=esc((name||'دوامي').trim()[0]),face=state.avatar?`<img src="${state.avatar}" alt="">`:initial;
+  $('meAvatar').innerHTML=face;$('avPrev').innerHTML=face;$('avDel').classList.toggle('hidden',!state.avatar);
+  const t=todayLocal(),hj=hijri(t,{day:'numeric',month:'long'});
   $('dateLine').textContent=`${dateLabel(t)}${hj?` · ${hj}`:''}`;
+  $('dateLine').title=`${dateLabel(t)} ${t.getFullYear()} · ${hijri(t)}`;
 }
 
 // ===================== الرئيسية =====================
@@ -1334,6 +1342,23 @@ function saveWork(){
 ['sDaily','sStart','sMonthly'].forEach(id=>$(id).addEventListener('change',saveWork));
 $('sWeekend').addEventListener('change',saveWork);
 
+// الصورة الشخصية: تُقص مربعًا وتُصغّر في المتصفح ثم تُحفظ مع الحساب
+async function makeAvatar(file){
+  const url=URL.createObjectURL(file);
+  try{
+    const img=await new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=url});
+    const S=256,c=document.createElement('canvas'),g=c.getContext('2d'),side=Math.min(img.naturalWidth,img.naturalHeight);
+    c.width=c.height=S;g.imageSmoothingQuality='high';
+    g.drawImage(img,(img.naturalWidth-side)/2,(img.naturalHeight-side)/2,side,side,0,0,S,S);
+    return c.toDataURL('image/jpeg',0.82);
+  }finally{URL.revokeObjectURL(url)}
+}
+$('avFile').onchange=async e=>{
+  const f=e.target.files[0];e.target.value='';if(!f)return;
+  let data;try{data=await makeAvatar(f)}catch(err){return toast('ما قدرت أقرأ الصورة، جرّب صورة ثانية','warning-circle')}
+  state.avatar=data;renderHeader();saved(sync('dawami_set_avatar',{p_avatar:data}),'تم حفظ الصورة');
+};
+$('avDel').onclick=()=>{if(!confirm('حذف الصورة الشخصية؟'))return;state.avatar='';renderHeader();saved(sync('dawami_set_avatar',{p_avatar:''}),'تم حذف الصورة')};
 $('keyToggle').onclick=()=>{keyVisible=!keyVisible;renderSettings()};
 $('syncNow').onclick=()=>refresh().then(()=>{if(loaded)toast('تمت المزامنة','cloud-check')});
 $('logout').onclick=()=>{if(confirm('تسجيل الخروج من هذا الجهاز؟ بياناتك تبقى في السحابة، وتحتاج رمز الدخول للرجوع.'))logout()};
