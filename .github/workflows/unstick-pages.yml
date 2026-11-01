@@ -1,0 +1,22 @@
+# يلغي نشر GitHub Pages العالق ثم يطلق نشرًا جديدًا. تشغيل يدوي من تبويب Actions عند الحاجة.
+name: unstick pages
+on:
+  workflow_dispatch:
+  push:
+    paths: ['.github/workflows/unstick-pages.yml']
+permissions:
+  pages: write
+  contents: read
+jobs:
+  cancel:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Cancel stuck deployment
+        run: |
+          gh api -X POST repos/${{ github.repository }}/pages/deployments/47c883156b982c7ded03e304600e7202f8d8dbc8/cancel && echo cancelled || echo "cancel failed"
+      - name: Request new Pages build
+        run: |
+          sleep 15
+          gh api -X POST repos/${{ github.repository }}/pages/builds && echo "build requested" || echo "build request failed"
