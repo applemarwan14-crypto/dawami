@@ -105,7 +105,8 @@ button{cursor:pointer}
 .av-prev{width:46px;height:46px;flex:0 0 auto;border-radius:50%;display:grid;place-items:center;overflow:hidden;background:linear-gradient(145deg,var(--brand-2),var(--brand));color:#fff;font-weight:600;font-size:18px}
 .av-actions{display:flex;gap:6px;flex:0 0 auto}
 .hello h1{margin:0;font-size:20px;font-weight:600;line-height:1.3;letter-spacing:-.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.hello p{margin:1px 0 0;color:var(--text-2);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hello p{margin:1px 0 0;color:var(--text-2);font-size:12.5px;line-height:1.45;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hello .hijri-line{margin-top:0;color:var(--text-3)}
 .head-actions{display:flex;align-items:center;gap:8px;flex:0 0 auto}
 .icon-btn{
   width:42px;height:42px;border-radius:14px;border:1px solid var(--border);background:var(--surface);
@@ -439,7 +440,7 @@ details.fold[open] summary{margin-bottom:14px}
       <div class="me" id="meAvatar">د</div>
       <div style="min-width:0">
         <h1 id="greeting">أهلًا</h1>
-        <p id="dateLine"></p>
+        <p id="dateLine"></p><p id="hijriLine" class="hijri-line"></p>
       </div>
     </div>
     <div class="head-actions">
@@ -739,7 +740,7 @@ details.fold[open] summary{margin-bottom:14px}
 <script>
 (() => {
 'use strict';
-const VERSION='4.1.0';
+const VERSION='4.1.1';
 // قاعدة البيانات (Supabase). المفتاح العام آمن للنشر؛ الجداول مغلقة ولا يُوصل لها إلا عبر دوال تتحقق من رمز الدخول.
 const SB_URL='https://rqdkbanngxzqcohjwkqd.supabase.co';
 const SB_KEY='sb_publishable_riz1vtR18k2qJ5w-Xv87mQ_P16NqyOB';
@@ -1009,9 +1010,9 @@ function renderHeader(){
   $('greeting').textContent=name?`${g}، ${name.split(' ')[0]}`:g;
   const initial=esc((name||'دوامي').trim()[0]),face=state.avatar?`<img src="${state.avatar}" alt="">`:initial;
   $('meAvatar').innerHTML=face;$('avPrev').innerHTML=face;$('avDel').classList.toggle('hidden',!state.avatar);
-  const t=todayLocal(),hj=hijri(t,{day:'numeric',month:'long'});
-  $('dateLine').textContent=`${dateLabel(t)}${hj?` · ${hj}`:''}`;
-  $('dateLine').title=`${dateLabel(t)} ${t.getFullYear()} · ${hijri(t)}`;
+  const t=todayLocal();
+  $('dateLine').textContent=`${dateLabel(t)} ${t.getFullYear()}`;
+  $('hijriLine').textContent=hijri(t);
 }
 
 // ===================== الرئيسية =====================
