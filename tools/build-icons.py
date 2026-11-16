@@ -19,6 +19,7 @@ ICONS = [
     'lightbulb', 'flag', 'sparkle', 'calendar-blank', 'calendar-x', 'calculator',
     'sliders-horizontal', 'shield-check', 'fingerprint', 'hand-palm', 'circle-half', 'laptop',
     'camera', 'lock-simple', 'check', 'text-aa', 'hash', 'map-pin',
+    'minus', 'ticket', 'sun-horizon', 'moon-stars', 'ruler', 'target', 'pulse',
 ]
 
 assets, page = sys.argv[1], sys.argv[2]

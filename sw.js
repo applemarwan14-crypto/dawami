@@ -1,5 +1,5 @@
 // يحدَّث رقم الإصدار مع كل تعديل على ملفات التطبيق
-const CACHE = 'dawami-v5.0.1';
+const CACHE = 'dawami-v6.0.0';
 const ASSETS = [
   './',
   './index.html',
@@ -8,7 +8,17 @@ const ASSETS = [
   './icons/icon-512.png',
   './icons/apple-touch-icon.png',
   './icons/favicon-32.png',
-  './vendor/motion-14.9.1.min.js'
+  './vendor/motion-14.9.1.min.js',
+  './fonts/ibm-plex-sans-arabic-arabic-400-normal.woff2',
+  './fonts/ibm-plex-sans-arabic-arabic-500-normal.woff2',
+  './fonts/ibm-plex-sans-arabic-arabic-600-normal.woff2',
+  './fonts/ibm-plex-sans-arabic-arabic-700-normal.woff2',
+  './fonts/ibm-plex-sans-arabic-latin-400-normal.woff2',
+  './fonts/ibm-plex-sans-arabic-latin-500-normal.woff2',
+  './fonts/ibm-plex-sans-arabic-latin-600-normal.woff2',
+  './fonts/ibm-plex-sans-arabic-latin-700-normal.woff2',
+  './fonts/ibm-plex-mono-latin-500-normal.woff2',
+  './fonts/ibm-plex-mono-latin-600-normal.woff2'
 ];
 
 self.addEventListener('install', e => {
