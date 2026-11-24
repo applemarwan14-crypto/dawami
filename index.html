@@ -833,8 +833,7 @@ body.booting .view,body.booting .dock{display:none!important}
         <div><span class="glyph sky"><svg class="ic"><use href="#ph-cloud-check"/></svg></span><span><b>معك في كل جهاز</b>بياناتك محفوظة في السحابة برمزك.</span></div>
       </div>
       <div class="gate-bottom">
-        <button class="btn primary block" id="gNew">إنشاء حساب جديد</button>
-        <button class="btn ghost block" id="gHave">عندي رمز دخول</button>
+        <button class="btn primary block" id="gHave">دخول برمز الدخول</button>
       </div>
     </div>
     <div id="gLogin" class="gate-panel hidden">
@@ -843,17 +842,6 @@ body.booting .view,body.booting .dock{display:none!important}
       <div class="field"><input id="gKey" class="mono" dir="ltr" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="DWM-XXXX-XXXX-…" aria-label="رمز الدخول"></div>
       <div class="gate-bottom">
         <button class="btn primary block" id="gLoginBtn">دخول</button>
-        <button class="btn ghost block" data-gate="gStart">رجوع</button>
-      </div>
-    </div>
-    <div id="gCreated" class="gate-panel hidden">
-      <h2>هذا رمز دخولك</h2>
-      <p class="lead">احفظه في «كلمات السر» أو الملاحظات. تحتاجه للدخول من جهاز ثاني.</p>
-      <div class="key-big" id="gNewKey"></div>
-      <button class="btn soft block" id="gCopyKey"><svg class="ic"><use href="#ph-copy"/></svg>نسخ الرمز</button>
-      <label class="check hidden" id="gMigrateWrap"><input type="checkbox" id="gMigrate" checked><span>انقل البيانات القديمة المحفوظة على هذا الجهاز</span></label>
-      <div class="gate-bottom" style="margin-top:20px">
-        <button class="btn primary block" id="gContinue">حفظته، ابدأ</button>
         <button class="btn ghost block" data-gate="gStart">رجوع</button>
       </div>
     </div>
@@ -867,7 +855,7 @@ body.booting .view,body.booting .dock{display:none!important}
 <script>
 (() => {
 'use strict';
-const VERSION='6.0.0';
+const VERSION='6.0.1';
 // قاعدة البيانات (Supabase). المفتاح العام آمن للنشر؛ الجداول مغلقة ولا يُوصل لها إلا عبر دوال تتحقق من رمز الدخول.
 const SB_URL='https://rqdkbanngxzqcohjwkqd.supabase.co';
 const SB_KEY='sb_publishable_riz1vtR18k2qJ5w-Xv87mQ_P16NqyOB';
@@ -1027,7 +1015,7 @@ function reveal(){
 function showGate(panel){
   document.body.classList.remove('booting');
   const g=$('gate');g.classList.remove('hidden');g.style.opacity='1';
-  ['gLoading','gOffline','gStart','gLogin','gCreated'].forEach(id=>$(id).classList.toggle('hidden',id!==panel));
+  ['gLoading','gOffline','gStart','gLogin'].forEach(id=>$(id).classList.toggle('hidden',id!==panel));
   $('gErr').textContent='';
   const p=$(panel);if(p)anim(p,{opacity:[0,1],transform:['translateY(14px)','translateY(0px)']},{duration:.55});
 }
@@ -1036,25 +1024,10 @@ function logout(msg){
   storeKey('');loaded=false;snapshot=null;state={settings:defaultSettings(),months:{},avatar:''};
   showGate('gStart');if(msg)$('gErr').textContent=msg;
 }
-let draftKey='';
-$('gNew').onclick=()=>{draftKey=newKey();$('gNewKey').textContent=draftKey;$('gMigrateWrap').classList.toggle('hidden',!legacyData());showGate('gCreated')};
+// التسجيل مقفل: الدخول برمز موجود فقط
 $('gHave').onclick=()=>{showGate('gLogin');setTimeout(()=>$('gKey').focus(),80)};
-$('gCopyKey').onclick=()=>copyText(draftKey);
 $('gRetry').onclick=()=>{boot();refresh()};
 document.querySelectorAll('[data-gate]').forEach(b=>b.addEventListener('click',()=>showGate(b.dataset.gate)));
-$('gContinue').onclick=async()=>{
-  const btn=$('gContinue');btn.disabled=true;$('gErr').textContent='';
-  try{
-    const legacy=$('gMigrate').checked?legacyData():null;
-    const settings=normalizeSettings(legacy?.flat.settings);
-    await rpc('dawami_register',{p_key:draftKey,p_settings:settings});
-    if(legacy){await rpc('dawami_import',{p_key:draftKey,p_state:legacy.flat,p_replace:false});try{localStorage.removeItem(LEGACY_KEY)}catch(e){}}
-    storeKey(draftKey);boot();await refresh();
-    toast(legacy?'تم إنشاء الحساب ونقل بياناتك':'تم إنشاء الحساب');
-    if(!settings.name){switchView('settings');setTimeout(()=>$('sName').focus(),400)}
-  }catch(e){$('gErr').textContent=errText(e)}
-  finally{btn.disabled=false}
-};
 $('gLoginBtn').onclick=async()=>{
   const k=normKey($('gKey').value),btn=$('gLoginBtn');if(k.length<24){$('gErr').textContent='الرمز ناقص، تأكد منه';return}
   btn.disabled=true;$('gErr').textContent='';
